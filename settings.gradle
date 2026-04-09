@@ -1,0 +1,3 @@
+rootProject.name = 'notification-server'
+
+include ('core:core-api', 'core:core-enum')
