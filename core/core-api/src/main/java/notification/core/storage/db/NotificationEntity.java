@@ -38,7 +38,7 @@ public class NotificationEntity {
     @Enumerated(value = EnumType.STRING)
     private NotificationChanel notificationChanel;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String notificationKey;
 
     @Enumerated(value = EnumType.STRING)

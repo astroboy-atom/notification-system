@@ -20,8 +20,7 @@ public class NotificationService {
         String notificationKey = keyGenerator.generate(notification);
         validateAlreadyAdded(notificationKey);
 
-        NotificationEntity saved = saveEntity(notification, notificationKey);
-        return saved.getId();
+        return saveEntity(notification, notificationKey).getId();
     }
 
     private NotificationEntity saveEntity(NewNotification notification, String notificationKey) {
