@@ -3,6 +3,8 @@ package notification.core.domain;
 import lombok.RequiredArgsConstructor;
 import notification.core.storage.db.NotificationEntity;
 import notification.core.storage.db.NotificationRepository;
+import notification.core.support.BaseException;
+import notification.core.support.ErrorType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,16 +17,28 @@ public class NotificationService {
 
     @Transactional
     public Long addNotification(NewNotification notification) {
+        String notificationKey = keyGenerator.generate(notification);
+        validateAlreadyAdded(notificationKey);
+
+        NotificationEntity saved = saveEntity(notification, notificationKey);
+        return saved.getId();
+    }
+
+    private NotificationEntity saveEntity(NewNotification notification, String notificationKey) {
         NotificationEntity entity = new NotificationEntity(
                 notification.recipientId(),
                 notification.eventId(),
                 notification.notificationType(),
                 notification.notificationChanel(),
-                keyGenerator.generate(notification)
+                notificationKey
         );
 
-        NotificationEntity saved = notificationRepository.save(entity);
+        return notificationRepository.save(entity);
+    }
 
-        return saved.getId();
+    private void validateAlreadyAdded(String key) {
+        if (notificationRepository.existsByNotificationKey(key)) {
+            throw new BaseException(ErrorType.DUPLICATED_NOTIFICATION);
+        }
     }
 }

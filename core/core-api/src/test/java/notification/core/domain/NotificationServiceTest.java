@@ -1,6 +1,7 @@
 package notification.core.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Optional;
 import notification.core.enums.NotificationChanel;
@@ -8,6 +9,8 @@ import notification.core.enums.NotificationStatus;
 import notification.core.enums.NotificationType;
 import notification.core.storage.db.NotificationEntity;
 import notification.core.storage.db.NotificationRepository;
+import notification.core.support.BaseException;
+import notification.core.support.ErrorType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,5 +46,17 @@ class NotificationServiceTest {
             assertThat(saved.getFailedReason()).isNull();
             assertThat(saved.getRequestedAt()).isNotNull();
         });
+    }
+
+    @Test
+    @DisplayName("이미 접수된 알림이면 예외가 발생한다.")
+    void validateAlreadyAdded() {
+        NewNotification notification = new NewNotification(2L, 2L, NotificationType.AFTER_PAIED, NotificationChanel.EMAIL);
+
+        notificationService.addNotification(notification);
+
+        assertThatThrownBy(() -> notificationService.addNotification(notification))
+                .isInstanceOf(BaseException.class)
+                .hasMessage(ErrorType.DUPLICATED_NOTIFICATION.message);
     }
 }
