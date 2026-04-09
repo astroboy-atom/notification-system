@@ -16,13 +16,13 @@ import notification.core.enums.NotificationChanel;
 import notification.core.enums.NotificationStatus;
 import notification.core.enums.NotificationType;
 
+@Getter
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Notification {
+public class NotificationEntity {
 
     @Id
-    @Getter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -38,6 +38,9 @@ public class Notification {
     @Enumerated(value = EnumType.STRING)
     private NotificationChanel notificationChanel;
 
+    @Column(nullable = false)
+    private String notificationKey;
+
     @Enumerated(value = EnumType.STRING)
     private NotificationStatus notificationStatus;
 
@@ -50,13 +53,20 @@ public class Notification {
     @Column(nullable = false)
     private Instant requestedAt;
 
-    public Notification(Long recipientId, Long eventId, NotificationType notificationType, NotificationChanel notificationChanel) {
+    public NotificationEntity(
+            Long recipientId,
+            Long eventId,
+            NotificationType notificationType,
+            NotificationChanel notificationChanel,
+            String notificationKey
+    ) {
         this(
                 null,
                 recipientId,
                 eventId,
                 notificationType,
                 notificationChanel,
+                notificationKey,
                 NotificationStatus.PENDING,
                 0,
                 null,
