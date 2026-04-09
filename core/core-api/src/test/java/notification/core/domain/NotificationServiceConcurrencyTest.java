@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import notification.core.enums.NotificationChanel;
 import notification.core.enums.NotificationType;
 import notification.core.storage.db.NotificationRepository;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +27,7 @@ class NotificationServiceConcurrencyTest {
     @Test
     @DisplayName("동시에 같은 알림이 접수되면 하나만 저장된다.")
     void addNotificationConcurrently() throws InterruptedException {
-        NewNotification notification = new NewNotification(3L, 3L, NotificationType.AFTER_PAIED, NotificationChanel.EMAIL);
+        NewNotification notification = new NewNotification(3L, 3L, NotificationType.AFTER_PAID, NotificationChanel.EMAIL);
         AtomicInteger successCount = new AtomicInteger();
         CountDownLatch readyLatch = new CountDownLatch(2);
         CountDownLatch startLatch = new CountDownLatch(1);

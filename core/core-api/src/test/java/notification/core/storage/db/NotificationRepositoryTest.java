@@ -23,7 +23,7 @@ class NotificationRepositoryTest {
         NotificationEntity notification = new NotificationEntity(
                 1L,
                 100L,
-                NotificationType.AFTER_PAIED,
+                NotificationType.AFTER_PAID,
                 NotificationChanel.EMAIL,
                 notificationKey
         );

@@ -73,4 +73,8 @@ public class NotificationEntity {
                 Instant.now()
         );
     }
+
+    public void done() {
+        this.notificationStatus = NotificationStatus.DONE;
+    }
 }
