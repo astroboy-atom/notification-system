@@ -6,6 +6,8 @@ import java.util.List;
 import notification.enums.NotificationStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 class NotificationRepositoryTest extends IntegrationTestSupport {
 
@@ -78,5 +80,32 @@ class NotificationRepositoryTest extends IntegrationTestSupport {
         );
 
         assertThat(notifications).isEmpty();
+    }
+
+    @Test
+    @DisplayName("주어진 ID 목록의 알림 상태를 새 트랜잭션에서 일괄 변경한다.")
+    void updateByIdsInWithNewTx() {
+        NotificationEntity first = notificationRepository.save(createNotification("key-1"));
+        NotificationEntity second = notificationRepository.save(createNotification("key-2"));
+        NotificationEntity third = notificationRepository.save(createNotification("key-3"));
+
+        TransactionStatus outerTransaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
+
+        try {
+            notificationRepository.updateByIdsInWithNewTx(
+                    List.of(first.getId(), second.getId()),
+                    NotificationStatus.IN_PROGRESS.name()
+            );
+        } finally {
+            transactionManager.rollback(outerTransaction);
+        }
+
+        assertThat(notificationRepository.findAllById(List.of(first.getId(), second.getId())))
+                .extracting(NotificationEntity::getNotificationStatus)
+                .containsOnly(NotificationStatus.IN_PROGRESS);
+
+        assertThat(notificationRepository.findAllById(List.of(third.getId())))
+                .extracting(NotificationEntity::getNotificationStatus)
+                .containsOnly(NotificationStatus.PENDING);
     }
 }

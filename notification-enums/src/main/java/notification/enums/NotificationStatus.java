@@ -2,5 +2,5 @@ package notification.enums;
 
 public enum NotificationStatus {
 
-    PENDING, DONE, FAILED
+    PENDING, IN_PROGRESS, DONE, FAILED
 }

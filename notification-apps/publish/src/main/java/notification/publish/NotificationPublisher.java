@@ -27,7 +27,18 @@ class NotificationPublisher {
         List<NotificationEntity> notificationEntities =
                 notificationRepository.findAllByNotificationStatusForUpdateSkipLocked(TARGET_STATUS, BATCH_SIZE);
 
+        markInProgressWithNewTx(notificationEntities);
+
         notificationEntities.forEach(this::doSend);
+    }
+
+    private void markInProgressWithNewTx(List<NotificationEntity> notificationEntities) {
+        notificationEntities.forEach(NotificationEntity::markInProgress);
+        List<Long> ids = notificationEntities.stream()
+                .map(NotificationEntity::getId)
+                .toList();
+
+        notificationRepository.updateByIdsInWithNewTx(ids, NotificationStatus.IN_PROGRESS.name());
     }
 
     private void doSend(NotificationEntity notificationEntity) {
@@ -35,13 +46,13 @@ class NotificationPublisher {
             supplier.doSend(notificationEntity);
             notificationEntity.done();
         } catch (RetryableException e) {
-            handleWhenRetryable(notificationEntity, e);
+            handleRetryable(notificationEntity, e);
         } catch (Exception e) {
             handleFinalFailed(notificationEntity, e.getMessage());
         }
     }
 
-    private void handleWhenRetryable(NotificationEntity notificationEntity, RetryableException e) {
+    private void handleRetryable(NotificationEntity notificationEntity, RetryableException e) {
         log.warn("알림 전송에 실패했습니다. id = {}, retryCount = {}", notificationEntity.getId(), notificationEntity.getRetryCount());
 
         if (notificationEntity.canRetry()) {

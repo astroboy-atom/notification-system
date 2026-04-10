@@ -113,4 +113,8 @@ public class NotificationEntity {
         this.notificationStatus = NotificationStatus.FAILED;
         this.nextAttemptAt = null;
     }
+
+    public void markInProgress() {
+        this.notificationStatus = NotificationStatus.IN_PROGRESS;
+    }
 }
