@@ -1,6 +1,8 @@
 package notification.storage.db;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -21,6 +23,8 @@ import notification.enums.NotificationType;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class NotificationEntity {
+
+    private static final int MAX_RETRY_COUNT = 3;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,6 +57,9 @@ public class NotificationEntity {
     @Column(nullable = false)
     private Instant requestedAt;
 
+    @Column(nullable = true)
+    private Instant nextAttemptAt;
+
     public NotificationEntity(
             Long recipientId,
             Long eventId,
@@ -70,11 +77,40 @@ public class NotificationEntity {
                 NotificationStatus.PENDING,
                 0,
                 null,
+                Instant.now(),
                 Instant.now()
         );
     }
 
     public void done() {
         this.notificationStatus = NotificationStatus.DONE;
+        this.failedReason = null;
+        this.nextAttemptAt = null;
+    }
+
+    public boolean canRetry() {
+        return retryCount < MAX_RETRY_COUNT;
+    }
+
+    public void markRetry() {
+        this.retryCount += 1;
+        this.notificationStatus = NotificationStatus.PENDING;
+        this.nextAttemptAt = Instant.now().plusMillis(calculateDelayMillis());
+    }
+
+    private long calculateDelayMillis() {
+        long delay = 1000L;
+
+        for (int i = 1; i < retryCount; i++) {
+            delay *= 2;
+        }
+
+        return delay;
+    }
+
+    public void markFailed(String failedReason) {
+        this.failedReason = failedReason;
+        this.notificationStatus = NotificationStatus.FAILED;
+        this.nextAttemptAt = null;
     }
 }

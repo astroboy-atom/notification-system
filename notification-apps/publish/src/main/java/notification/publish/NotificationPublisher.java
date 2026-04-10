@@ -24,12 +24,37 @@ class NotificationPublisher {
     @Transactional
     @Scheduled(fixedDelay = 1000)
     public void publish() {
-
         List<NotificationEntity> notificationEntities =
                 notificationRepository.findAllByNotificationStatusForUpdateSkipLocked(TARGET_STATUS, BATCH_SIZE);
 
-        notificationEntities.forEach(supplier::doSend);
+        notificationEntities.forEach(this::doSend);
+    }
 
-        notificationEntities.forEach(NotificationEntity::done);
+    private void doSend(NotificationEntity notificationEntity) {
+        try {
+            supplier.doSend(notificationEntity);
+            notificationEntity.done();
+        } catch (RetryableException e) {
+            handleWhenRetryable(notificationEntity, e);
+        } catch (Exception e) {
+            handleFinalFailed(notificationEntity, e.getMessage());
+        }
+    }
+
+    private void handleWhenRetryable(NotificationEntity notificationEntity, RetryableException e) {
+        log.warn("알림 전송에 실패했습니다. id = {}, retryCount = {}", notificationEntity.getId(), notificationEntity.getRetryCount());
+
+        if (notificationEntity.canRetry()) {
+            notificationEntity.markRetry();
+            return;
+        }
+
+        handleFinalFailed(notificationEntity, e.getMessage());
+    }
+
+    private void handleFinalFailed(NotificationEntity notificationEntity, String reason) {
+        log.error("알림 전송에 최종 실패했습니다. id = {}, retryCount = {}", notificationEntity.getId(), notificationEntity.getRetryCount());
+
+        notificationEntity.markFailed(reason);
     }
 }

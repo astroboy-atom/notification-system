@@ -15,6 +15,7 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
                SELECT *
                FROM notification_entity n
                WHERE n.notification_status = :status
+                 AND (n.next_attempt_at IS NULL OR n.next_attempt_at <= CURRENT_TIMESTAMP(6))
                ORDER BY n.id
                LIMIT :limit
                FOR UPDATE SKIP LOCKED
