@@ -3,6 +3,7 @@ package notification.publish;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import notificaiton.supplier.AmbiguousCallException;
 import notificaiton.supplier.NotificationSupplier;
 import notificaiton.supplier.RetryableException;
 import notification.enums.NotificationStatus;
@@ -43,6 +44,7 @@ public class NotificationProcessor {
             notificationEntity.done();
         } catch (RetryableException e) {
             handleRetryable(notificationEntity, e);
+        } catch (AmbiguousCallException ignore) {
         } catch (Exception e) {
             handleFinalFailed(notificationEntity, e.getMessage());
         }
