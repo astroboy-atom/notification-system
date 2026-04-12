@@ -1,8 +1,6 @@
 package notification.storage.db;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -116,5 +114,9 @@ public class NotificationEntity {
 
     public void markInProgress() {
         this.notificationStatus = NotificationStatus.IN_PROGRESS;
+    }
+
+    public void markPending() {
+        this.notificationStatus = NotificationStatus.PENDING;
     }
 }

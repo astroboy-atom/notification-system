@@ -28,6 +28,18 @@ class DirectNotificationSupplier implements NotificationSupplier {
         sender.send(notificationEntity, memberEntity, eventEntity);
     }
 
+    @Override
+    public boolean isSupportIdempotency(NotificationEntity notificationEntity) {
+        return false;
+    }
+
+    @Override
+    public boolean isAlreadySend(NotificationEntity notificationEntity) {
+        NotificationChanelSender sender = findSendersOrThrow(notificationEntity);
+
+        return sender.isAlreadySend(notificationEntity);
+    }
+
     private NotificationChanelSender findSendersOrThrow(NotificationEntity notificationEntity) {
         return senders.stream()
                 .filter(it -> it.isSupport(notificationEntity.getNotificationChanel()))

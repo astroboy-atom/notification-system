@@ -30,4 +30,9 @@ class EmailSender implements NotificationChanelSender {
                 memberEntity.getEmail()
         );
     }
+
+    @Override
+    public boolean isAlreadySend(NotificationEntity notificationEntity) {
+        return false;
+    }
 }

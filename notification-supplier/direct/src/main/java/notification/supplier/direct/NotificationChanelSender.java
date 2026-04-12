@@ -9,5 +9,7 @@ public interface NotificationChanelSender {
 
     boolean isSupport(NotificationChanel chanel);
 
+    boolean isAlreadySend(NotificationEntity notificationEntity);
+
     void send(NotificationEntity notificationEntity, MemberEntity memberEntity, EventEntity eventEntity);
 }

@@ -17,4 +17,14 @@ public class MessageBrokerNotificationSupplier implements NotificationSupplier {
                 notificationEntity.getNotificationChanel().name()
         );
     }
+
+    @Override
+    public boolean isSupportIdempotency(NotificationEntity notificationEntity) {
+        return true;
+    }
+
+    @Override
+    public boolean isAlreadySend(NotificationEntity notificationEntity) {
+        return true;
+    }
 }

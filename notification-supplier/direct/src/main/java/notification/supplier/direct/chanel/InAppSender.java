@@ -30,4 +30,9 @@ class InAppSender implements NotificationChanelSender {
                 memberEntity.getInAppToken()
         );
     }
+
+    @Override
+    public boolean isAlreadySend(NotificationEntity notificationEntity) {
+        return false;
+    }
 }

@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationProcessor {
 
     private final NotificationRepository notificationRepository;
-    private final NotificationSupplier supplier;
+    private final NotificationSupplier notificationSupplier;
 
     @Transactional
     public void markInProgress(int batchSize) {
@@ -39,7 +39,7 @@ public class NotificationProcessor {
 
     private void doSend(NotificationEntity notificationEntity) {
         try {
-            supplier.doSend(notificationEntity);
+            notificationSupplier.doSend(notificationEntity);
             notificationEntity.done();
         } catch (RetryableException e) {
             handleRetryable(notificationEntity, e);
