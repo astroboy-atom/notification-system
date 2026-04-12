@@ -1,0 +1,5 @@
+dependencies {
+    implementation project(':notification-storage:db')
+    implementation project(':notification-supplier:common')
+    implementation project(':notification-enums')
+}
