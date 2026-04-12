@@ -29,6 +29,7 @@ public class NotificationProcessor {
         notificationEntities.forEach(NotificationEntity::markInProgress);
     }
 
+    // TODO : 현재 구조는 IN_PROGRESS(markInProgress 호출 후 정상 상태, 크래시로 인한 호출 불확정 상태)를 모두 처리하고 있다.
     @Transactional
     public void process(int batchSize) {
         String targetStatus = NotificationStatus.IN_PROGRESS.name();
