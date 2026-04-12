@@ -1,3 +1,11 @@
 rootProject.name = 'notification-server'
 
-include ('notification-apps:api', 'notification-apps:publish', 'notification-enums', 'notification-storage:db')
+include (
+        'notification-apps:api',
+        'notification-apps:publish',
+        'notification-enums',
+        'notification-storage:db',
+        'notification-supplier:common',
+        'notification-supplier:direct',
+        'notification-supplier:mq',
+)

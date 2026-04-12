@@ -9,6 +9,7 @@ jar {
 dependencies {
     implementation project(':notification-enums')
     implementation project(':notification-storage:db')
+    implementation project(':notification-supplier:common')
     implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
