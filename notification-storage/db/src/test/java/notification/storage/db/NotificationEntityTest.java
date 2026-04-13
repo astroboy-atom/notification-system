@@ -31,19 +31,22 @@ class NotificationEntityTest {
         assertThat(notificationEntity.getFailedReason()).isNull();
         assertThat(notificationEntity.getRequestedAt()).isBetween(before, after);
         assertThat(notificationEntity.getNextAttemptAt()).isBetween(before, after);
+        assertThat(notificationEntity.getLastClaimedAt()).isNull();
     }
 
     @Test
     @DisplayName("완료 처리하면 상태가 DONE으로 바뀌고 실패 정보와 다음 재시도 시간이 제거된다.")
     void done() {
         NotificationEntity notificationEntity = createNotification("notification-key");
-        notificationEntity.markFailed("failed");
+        notificationEntity.markInProgress();
+        Instant lastClaimedAt = notificationEntity.getLastClaimedAt();
 
         notificationEntity.done();
 
         assertThat(notificationEntity.getNotificationStatus()).isEqualTo(NotificationStatus.DONE);
         assertThat(notificationEntity.getFailedReason()).isNull();
         assertThat(notificationEntity.getNextAttemptAt()).isNull();
+        assertThat(notificationEntity.getLastClaimedAt()).isEqualTo(lastClaimedAt);
     }
 
     @Test
@@ -76,6 +79,7 @@ class NotificationEntityTest {
     void markRetry() {
         NotificationEntity notificationEntity = createNotification("notification-key");
         notificationEntity.markInProgress();
+        Instant lastClaimedAt = notificationEntity.getLastClaimedAt();
         Instant before = Instant.now();
 
         notificationEntity.markRetry();
@@ -86,6 +90,7 @@ class NotificationEntityTest {
         assertThat(notificationEntity.getNotificationStatus()).isEqualTo(NotificationStatus.PENDING);
         assertThat(notificationEntity.getNextAttemptAt())
                 .isBetween(before.plusMillis(1000), after.plusMillis(1000));
+        assertThat(notificationEntity.getLastClaimedAt()).isEqualTo(lastClaimedAt);
     }
 
     @Test
@@ -108,23 +113,42 @@ class NotificationEntityTest {
     @DisplayName("실패 처리하면 상태가 FAILED로 바뀌고 실패 사유를 저장하며 다음 재시도 시간을 제거한다.")
     void markFailed() {
         NotificationEntity notificationEntity = createNotification("notification-key");
-        notificationEntity.markRetry();
+        notificationEntity.markInProgress();
+        Instant lastClaimedAt = notificationEntity.getLastClaimedAt();
 
         notificationEntity.markFailed("failed reason");
 
         assertThat(notificationEntity.getNotificationStatus()).isEqualTo(NotificationStatus.FAILED);
         assertThat(notificationEntity.getFailedReason()).isEqualTo("failed reason");
         assertThat(notificationEntity.getNextAttemptAt()).isNull();
+        assertThat(notificationEntity.getLastClaimedAt()).isEqualTo(lastClaimedAt);
     }
 
     @Test
-    @DisplayName("진행 중 처리하면 상태가 IN_PROGRESS로 바뀐다.")
+    @DisplayName("진행 중 처리하면 상태가 IN_PROGRESS로 바뀌고 lastClaimedAt이 설정된다.")
     void markInProgress() {
         NotificationEntity notificationEntity = createNotification("notification-key");
+        Instant before = Instant.now();
 
         notificationEntity.markInProgress();
 
+        Instant after = Instant.now();
+
         assertThat(notificationEntity.getNotificationStatus()).isEqualTo(NotificationStatus.IN_PROGRESS);
+        assertThat(notificationEntity.getLastClaimedAt()).isBetween(before, after);
+    }
+
+    @Test
+    @DisplayName("대기 처리해도 마지막 claim 시각은 유지된다.")
+    void markPending() {
+        NotificationEntity notificationEntity = createNotification("notification-key");
+        notificationEntity.markInProgress();
+        Instant lastClaimedAt = notificationEntity.getLastClaimedAt();
+
+        notificationEntity.markPending();
+
+        assertThat(notificationEntity.getNotificationStatus()).isEqualTo(NotificationStatus.PENDING);
+        assertThat(notificationEntity.getLastClaimedAt()).isEqualTo(lastClaimedAt);
     }
 
     private NotificationEntity createNotification(String notificationKey) {

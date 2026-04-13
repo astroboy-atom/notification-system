@@ -58,6 +58,9 @@ public class NotificationEntity {
     @Column(nullable = true)
     private Instant nextAttemptAt;
 
+    @Column(nullable = true)
+    private Instant lastClaimedAt;
+
     public NotificationEntity(
             Long recipientId,
             Long eventId,
@@ -76,7 +79,8 @@ public class NotificationEntity {
                 0,
                 null,
                 Instant.now(),
-                Instant.now()
+                Instant.now(),
+                null
         );
     }
 
@@ -114,6 +118,7 @@ public class NotificationEntity {
 
     public void markInProgress() {
         this.notificationStatus = NotificationStatus.IN_PROGRESS;
+        this.lastClaimedAt = Instant.now();
     }
 
     public void markPending() {

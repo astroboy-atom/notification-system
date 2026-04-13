@@ -20,21 +20,30 @@ public class NotificationProcessor {
     private final NotificationRepository notificationRepository;
     private final NotificationSupplier notificationSupplier;
 
+    /**
+     * 현재 스레드에서 claim한 notification ids 반환
+     */
     @Transactional
-    public void markInProgress(int batchSize) {
+    public List<Long> markInProgress(int batchSize) {
         String targetStatus = NotificationStatus.PENDING.name();
         List<NotificationEntity> notificationEntities =
                 notificationRepository.findAllByNotificationStatusForUpdateSkipLocked(targetStatus, batchSize);
 
         notificationEntities.forEach(NotificationEntity::markInProgress);
+
+        return notificationEntities.stream()
+                .map(NotificationEntity::getId)
+                .toList();
     }
 
-    // TODO : 현재 구조는 IN_PROGRESS(markInProgress 호출 후 정상 상태, 크래시로 인한 호출 불확정 상태)를 모두 처리하고 있다.
+    /**
+     * 현재 스레드에서 claim한 notification ids를 처리한다.
+     * 발송이 길어지면, recovery에서 소비할 수 있다.
+     */
     @Transactional
-    public void process(int batchSize) {
-        String targetStatus = NotificationStatus.IN_PROGRESS.name();
+    public void process(List<Long> ids) {
         List<NotificationEntity> notificationEntities =
-                notificationRepository.findAllByNotificationStatusForUpdateSkipLocked(targetStatus, batchSize);
+                notificationRepository.findAllById(ids);
 
         notificationEntities.forEach(this::doSend);
     }

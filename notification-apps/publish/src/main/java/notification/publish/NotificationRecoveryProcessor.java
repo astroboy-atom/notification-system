@@ -1,5 +1,7 @@
 package notification.publish;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationRecoveryProcessor {
 
     private static final int BATCH_SIZE = 5;
+    private static final Duration CLAIM_TIMEOUT = Duration.ofMinutes(5);
     private static final String TARGET_STATUS = NotificationStatus.IN_PROGRESS.name();
 
     private final NotificationRepository notificationRepository;
@@ -30,9 +33,14 @@ public class NotificationRecoveryProcessor {
 
     @Transactional
     @Scheduled(fixedDelay = 10000)
-    public void publish() {
+    public void recovery() {
+        Instant claimedBefore = Instant.now().minus(CLAIM_TIMEOUT);
         List<NotificationEntity> notificationEntities =
-                notificationRepository.findAllByNotificationStatusForUpdateSkipLocked(TARGET_STATUS, BATCH_SIZE);
+                notificationRepository.findAllByNotificationStatusAndLastClaimedAtBeforeForUpdateSkipLocked(
+                        TARGET_STATUS,
+                        claimedBefore,
+                        BATCH_SIZE
+                );
 
         notificationEntities.forEach(this::recovery);
     }

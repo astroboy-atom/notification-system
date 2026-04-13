@@ -1,5 +1,6 @@
 package notification.publish;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,7 +17,7 @@ class NotificationPublisher {
 
     @Scheduled(fixedDelay = 1000)
     public void publish() {
-        notificationProcessor.markInProgress(BATCH_SIZE);
-        notificationProcessor.process(BATCH_SIZE);
+        List<Long> ids = notificationProcessor.markInProgress(BATCH_SIZE);
+        notificationProcessor.process(ids);
     }
 }
