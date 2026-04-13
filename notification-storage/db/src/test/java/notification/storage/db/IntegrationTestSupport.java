@@ -35,11 +35,19 @@ abstract class IntegrationTestSupport {
     protected NotificationRepository notificationRepository;
 
     @Autowired
+    protected MemberRepository memberRepository;
+
+    @Autowired
+    protected EventRepository eventRepository;
+
+    @Autowired
     protected PlatformTransactionManager transactionManager;
 
     @AfterEach
     void tearDown() {
         notificationRepository.deleteAll();
+        eventRepository.deleteAll();
+        memberRepository.deleteAll();
     }
 
     protected NotificationEntity createNotification(String notificationKey) {
@@ -49,6 +57,23 @@ abstract class IntegrationTestSupport {
                 NotificationType.AFTER_PAID,
                 NotificationChanel.EMAIL,
                 notificationKey
+        );
+    }
+
+    protected MemberEntity createMember() {
+        return new MemberEntity(
+                null,
+                "test@test.com",
+                "in-app-token",
+                true,
+                true
+        );
+    }
+
+    protected EventEntity createEvent() {
+        return new EventEntity(
+                null,
+                "event contents"
         );
     }
 
