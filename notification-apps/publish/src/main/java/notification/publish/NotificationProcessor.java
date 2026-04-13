@@ -56,7 +56,7 @@ public class NotificationProcessor {
             handleRetryable(notificationEntity, e);
         } catch (AmbiguousCallException ignore) {
         } catch (Exception e) {
-            handleFinalFailed(notificationEntity, e.getMessage());
+            handleFinalFailed(notificationEntity, e);
         }
     }
 
@@ -68,12 +68,12 @@ public class NotificationProcessor {
             return;
         }
 
-        handleFinalFailed(notificationEntity, e.getMessage());
+        handleFinalFailed(notificationEntity, e);
     }
 
-    private void handleFinalFailed(NotificationEntity notificationEntity, String reason) {
+    private void handleFinalFailed(NotificationEntity notificationEntity, Exception e) {
         log.error("알림 전송에 최종 실패했습니다. id = {}, retryCount = {}", notificationEntity.getId(), notificationEntity.getRetryCount());
 
-        notificationEntity.markFailed(reason);
+        notificationEntity.markFailed(e.getMessage());
     }
 }
