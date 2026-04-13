@@ -82,6 +82,38 @@ class NotificationRepositoryTest extends IntegrationTestSupport {
     }
 
     @Test
+    @DisplayName("nextAttemptAt이 null인 알림도 조회한다.")
+    void findAllByNotificationStatusForUpdateSkipLocked_includesNullNextAttemptAt() {
+        NotificationEntity pending = notificationRepository.save(createPendingNotification("pending-key", null));
+
+        List<NotificationEntity> notifications = notificationRepository.findAllByNotificationStatusForUpdateSkipLocked(
+                NotificationStatus.PENDING.name(),
+                10
+        );
+
+        assertThat(notifications)
+                .extracting(NotificationEntity::getId)
+                .containsExactly(pending.getId());
+    }
+
+    @Test
+    @DisplayName("nextAttemptAt이 지나지 않은 알림은 조회하지 않는다.")
+    void findAllByNotificationStatusForUpdateSkipLocked_excludesFutureNextAttemptAt() {
+        Instant now = Instant.now();
+        NotificationEntity past = notificationRepository.save(createPendingNotification("past-key", now.minusSeconds(1)));
+        notificationRepository.save(createPendingNotification("future-key", now.plusSeconds(30)));
+
+        List<NotificationEntity> notifications = notificationRepository.findAllByNotificationStatusForUpdateSkipLocked(
+                NotificationStatus.PENDING.name(),
+                10
+        );
+
+        assertThat(notifications)
+                .extracting(NotificationEntity::getId)
+                .containsExactly(past.getId());
+    }
+
+    @Test
     @DisplayName("일정 시간 지난 IN_PROGRESS 상태의 알림만 조회한다.")
     void findAllByNotificationStatusAndLastClaimedAtBeforeForUpdateSkipLocked() {
         Instant now = Instant.now();
@@ -100,6 +132,43 @@ class NotificationRepositoryTest extends IntegrationTestSupport {
                 .containsExactly(stale.getId());
     }
 
+    @Test
+    @DisplayName("일정 시간 지난 IN_PROGRESS 상태의 알림만 batch size만큼 조회한다.")
+    void findAllByNotificationStatusAndLastClaimedAtBeforeForUpdateSkipLocked_respectsBatchSize() {
+        Instant now = Instant.now();
+        NotificationEntity first = notificationRepository.save(createInProgressNotification("key-1", now.minusSeconds(31)));
+        NotificationEntity second = notificationRepository.save(createInProgressNotification("key-2", now.minusSeconds(32)));
+        notificationRepository.save(createInProgressNotification("key-3", now.minusSeconds(33)));
+
+        List<NotificationEntity> notifications =
+                notificationRepository.findAllByNotificationStatusAndLastClaimedAtBeforeForUpdateSkipLocked(
+                        NotificationStatus.IN_PROGRESS.name(),
+                        now.minusSeconds(30),
+                        2
+                );
+
+        assertThat(notifications)
+                .extracting(NotificationEntity::getId)
+                .containsExactly(first.getId(), second.getId());
+    }
+
+    @Test
+    @DisplayName("조건에 맞는 IN_PROGRESS 알림이 없으면 빈 컬렉션을 반환한다.")
+    void findAllByNotificationStatusAndLastClaimedAtBeforeForUpdateSkipLocked_returnsEmptyCollection() {
+        Instant now = Instant.now();
+        notificationRepository.save(createInProgressNotification("recent-key", now.minusSeconds(10)));
+        notificationRepository.save(createNotification("pending-key"));
+
+        List<NotificationEntity> notifications =
+                notificationRepository.findAllByNotificationStatusAndLastClaimedAtBeforeForUpdateSkipLocked(
+                        NotificationStatus.IN_PROGRESS.name(),
+                        now.minusSeconds(30),
+                        10
+                );
+
+        assertThat(notifications).isEmpty();
+    }
+
     private NotificationEntity createInProgressNotification(String notificationKey, Instant lastClaimedAt) {
         return new NotificationEntity(
                 null,
@@ -114,6 +183,23 @@ class NotificationRepositoryTest extends IntegrationTestSupport {
                 Instant.now(),
                 Instant.now(),
                 lastClaimedAt
+        );
+    }
+
+    private NotificationEntity createPendingNotification(String notificationKey, Instant nextAttemptAt) {
+        return new NotificationEntity(
+                null,
+                1L,
+                100L,
+                notification.enums.NotificationType.AFTER_PAID,
+                notification.enums.NotificationChanel.EMAIL,
+                notificationKey,
+                NotificationStatus.PENDING,
+                0,
+                null,
+                Instant.now(),
+                nextAttemptAt,
+                null
         );
     }
 }
