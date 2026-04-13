@@ -3,12 +3,9 @@ package notification.storage.db;
 import java.time.Instant;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<NotificationEntity, Long> {
@@ -42,18 +39,5 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
             @Param("status") String notificationStatus,
             @Param("claimedBefore") Instant claimedBefore,
             @Param("limit") Integer limit
-    );
-
-    @Query(value = """
-                UPDATE notification_entity n
-                SET n.notification_status = :status
-                where n.id in :ids
-            
-            """, nativeQuery = true)
-    @Modifying
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    void updateByIdsInWithNewTx(
-            @Param("ids") List<Long> ids,
-            @Param("status") String notificationStatus
     );
 }
