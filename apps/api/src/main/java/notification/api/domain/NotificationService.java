@@ -3,8 +3,10 @@ package notification.api.domain;
 import lombok.RequiredArgsConstructor;
 import notification.api.support.BaseException;
 import notification.api.support.ErrorType;
+import notification.api.support.Page;
 import notification.storage.db.NotificationEntity;
 import notification.storage.db.NotificationRepository;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,5 +41,13 @@ public class NotificationService {
         if (notificationRepository.existsByNotificationKey(key)) {
             throw new BaseException(ErrorType.DUPLICATED_NOTIFICATION);
         }
+    }
+
+    public Page<Notification> getNotifications(Long recipientId, Boolean isRead, Pageable pageable) {
+        return null;
+    }
+
+    public Notification getNotification(Long id) {
+        return null;
     }
 }

@@ -2,6 +2,7 @@ package notification.api.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Instant;
 import notification.enums.NotificationChanel;
 import notification.enums.NotificationType;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +18,7 @@ class NotificationKeyGeneratorTest {
         NewNotification notification = new NewNotification(
                 1L,
                 100L,
+                Instant.parse("2026-04-14T00:00:00Z"),
                 NotificationType.AFTER_PAID,
                 NotificationChanel.EMAIL
         );

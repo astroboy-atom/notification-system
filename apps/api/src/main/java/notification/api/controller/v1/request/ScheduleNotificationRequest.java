@@ -1,10 +1,11 @@
-package notification.api.domain;
+package notification.api.controller.v1.request;
 
 import java.time.Instant;
+import notification.api.domain.NewNotification;
 import notification.enums.NotificationChanel;
 import notification.enums.NotificationType;
 
-public record NewNotification(
+public record ScheduleNotificationRequest(
         Long recipientId,
         Long eventId,
         Instant reservedAt,
@@ -12,11 +13,7 @@ public record NewNotification(
         NotificationChanel notificationChanel
 ) {
 
-    public String getTypeName() {
-        return notificationType.name().toLowerCase();
-    }
-
-    public String getChanelName() {
-        return notificationChanel.name().toLowerCase();
+    public NewNotification toNotification() {
+        return new NewNotification(recipientId, eventId, reservedAt, notificationType, notificationChanel);
     }
 }

@@ -3,6 +3,7 @@ package notification.api.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.time.Instant;
 import java.util.Optional;
 import notification.api.support.BaseException;
 import notification.api.support.ErrorType;
@@ -11,6 +12,7 @@ import notification.enums.NotificationStatus;
 import notification.enums.NotificationType;
 import notification.storage.db.NotificationEntity;
 import notification.storage.db.NotificationRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +27,21 @@ class NotificationServiceTest {
     @Autowired
     private NotificationRepository notificationRepository;
 
+    @BeforeEach
+    void setUp() {
+        notificationRepository.deleteAllInBatch();
+    }
+
     @Test
     @DisplayName("신규 알림을 생성한다.")
     void addNotification() {
-        NewNotification notification = new NewNotification(1L, 1L, NotificationType.AFTER_PAID, NotificationChanel.EMAIL);
+        NewNotification notification = new NewNotification(
+                1L,
+                1L,
+                Instant.now(),
+                NotificationType.AFTER_PAID,
+                NotificationChanel.EMAIL
+        );
 
         Long savedId = notificationService.addNotification(notification);
 
@@ -51,7 +64,13 @@ class NotificationServiceTest {
     @Test
     @DisplayName("이미 접수된 알림이면 예외가 발생한다.")
     void validateAlreadyAdded() {
-        NewNotification notification = new NewNotification(2L, 2L, NotificationType.AFTER_PAID, NotificationChanel.EMAIL);
+        NewNotification notification = new NewNotification(
+                2L,
+                2L,
+                Instant.now(),
+                NotificationType.AFTER_PAID,
+                NotificationChanel.EMAIL
+        );
 
         notificationService.addNotification(notification);
 

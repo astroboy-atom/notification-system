@@ -1,5 +1,6 @@
 package notification.api.controller.v1.request;
 
+import java.time.Instant;
 import notification.api.domain.NewNotification;
 import notification.enums.NotificationChanel;
 import notification.enums.NotificationType;
@@ -12,6 +13,6 @@ public record AddNotificationRequest(
 ) {
 
     public NewNotification toNotification() {
-        return new NewNotification(recipientId, eventId, notificationType, notificationChanel);
+        return new NewNotification(recipientId, eventId, Instant.now(), notificationType, notificationChanel);
     }
 }
