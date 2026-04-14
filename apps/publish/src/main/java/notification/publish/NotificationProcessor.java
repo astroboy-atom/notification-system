@@ -6,7 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import notificaiton.supplier.AmbiguousCallException;
 import notificaiton.supplier.NotificationSupplier;
 import notificaiton.supplier.RetryableException;
+import notification.enums.NotificationChanel;
 import notification.enums.NotificationStatus;
+import notification.enums.NotificationType;
 import notification.monitoring.NotificationMetrics;
 import notification.storage.db.NotificationEntity;
 import notification.storage.db.NotificationRepository;
@@ -56,7 +58,8 @@ public class NotificationProcessor {
             notificationEntity.done();
         } catch (RetryableException e) {
             handleRetryable(notificationEntity, e);
-        } catch (AmbiguousCallException ignore) {
+        } catch (AmbiguousCallException e) {
+            handleAmbiguousCall(notificationEntity, e);
         } catch (Exception e) {
             handleFinalFailed(notificationEntity, e);
         }
@@ -73,10 +76,21 @@ public class NotificationProcessor {
         handleFinalFailed(notificationEntity, e);
     }
 
+    private void handleAmbiguousCall(NotificationEntity notificationEntity, AmbiguousCallException e) {
+        log.error("알림 전송에 실패했지만, 호출이 명확하지 않습니다. id = {}", notificationEntity.getId());
+
+        NotificationChanel chanel = notificationEntity.getNotificationChanel();
+        NotificationType type = notificationEntity.getNotificationType();
+        notificationMetrics.incrementAmbiguousFailure(chanel, type);
+    }
+
     private void handleFinalFailed(NotificationEntity notificationEntity, Exception e) {
         log.error("알림 전송에 최종 실패했습니다. id = {}, retryCount = {}", notificationEntity.getId(), notificationEntity.getRetryCount());
 
         notificationEntity.markFailed(e.getMessage());
-        notificationMetrics.incrementFinalFailure(notificationEntity.getNotificationChanel(), notificationEntity.getNotificationType());
+
+        NotificationChanel chanel = notificationEntity.getNotificationChanel();
+        NotificationType type = notificationEntity.getNotificationType();
+        notificationMetrics.incrementFinalFailure(chanel, type);
     }
 }

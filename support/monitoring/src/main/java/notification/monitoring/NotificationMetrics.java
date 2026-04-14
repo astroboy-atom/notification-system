@@ -20,4 +20,12 @@ public class NotificationMetrics {
                 .register(meterRegistry)
                 .increment();
     }
+
+    public void incrementAmbiguousFailure(NotificationChanel notificationChanel, NotificationType notificationType) {
+        Counter.builder("notification.ambiguous.total")
+                .tag("channel", notificationChanel.name())
+                .tag("type", notificationType.name())
+                .register(meterRegistry)
+                .increment();
+    }
 }
