@@ -7,7 +7,6 @@ import notification.enums.NotificationChanel;
 import notification.enums.NotificationStatus;
 import notification.enums.NotificationType;
 
-// notification domain에서 숨기고 싶은 부분이 있는 경우
 public record NotificationResponse(
         Long id,
         Long recipientId,
