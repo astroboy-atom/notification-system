@@ -8,7 +8,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-// TODO : 테스트 환경에서는 제거
 @Slf4j
 @Component
 @RequiredArgsConstructor

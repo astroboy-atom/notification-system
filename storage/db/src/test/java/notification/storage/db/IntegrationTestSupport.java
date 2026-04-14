@@ -11,25 +11,26 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
-@Testcontainers
 @SpringBootTest(classes = IntegrationTestSupport.TestApplication.class)
 abstract class IntegrationTestSupport {
 
-    @Container
-    static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8.0.40")
+    static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8.4")
             .withDatabaseName("notification")
-            .withUsername("root")
-            .withPassword("root");
+            .withUsername("test")
+            .withPassword("test");
+
+    static {
+        MYSQL.start();
+    }
 
     @DynamicPropertySource
-    public static void overrideProperty(DynamicPropertyRegistry dynamicPropertyRegistry) {
-        dynamicPropertyRegistry.add("spring.datasource.url", MYSQL::getJdbcUrl);
-        dynamicPropertyRegistry.add("spring.datasource.username", () -> "root");
-        dynamicPropertyRegistry.add("spring.datasource.password", () -> "root");
-        dynamicPropertyRegistry.add("spring.jpa.hibernate.ddl-auto", () -> "create");
+    static void registerDataSourceProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", MYSQL::getJdbcUrl);
+        registry.add("spring.datasource.username", MYSQL::getUsername);
+        registry.add("spring.datasource.password", MYSQL::getPassword);
+        registry.add("spring.datasource.driver-class-name", MYSQL::getDriverClassName);
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create");
     }
 
     @Autowired

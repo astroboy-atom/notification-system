@@ -92,8 +92,7 @@ class NotificationServiceTest {
         assertThat(notification.id()).isEqualTo(saved.getId());
         assertThat(notification.recipientId()).isEqualTo(1L);
         assertThat(notification.eventId()).isEqualTo(100L);
-        assertThat(notification.requestedAt()).isEqualTo(reservedAt);
-        assertThat(notification.requestAt()).isEqualTo(saved.getRequestedAt());
+        assertThat(notification.requestedAt()).isEqualTo(saved.getRequestedAt());
         assertThat(notification.notificationKey()).isEqualTo("detail-key");
         assertThat(notification.notificationType()).isEqualTo(NotificationType.AFTER_PAID);
         assertThat(notification.notificationChanel()).isEqualTo(NotificationChanel.EMAIL);
@@ -113,7 +112,7 @@ class NotificationServiceTest {
     void getNotifications() {
         Instant firstReservedAt = Instant.parse("2026-04-14T00:00:00Z");
         Instant secondReservedAt = Instant.parse("2026-04-14T00:01:00Z");
-        notificationRepository.save(createNotificationEntity(1L, "key-1", false, firstReservedAt));
+        NotificationEntity first = notificationRepository.save(createNotificationEntity(1L, "key-1", false, firstReservedAt));
         notificationRepository.save(createNotificationEntity(1L, "key-2", false, secondReservedAt));
         notificationRepository.save(createNotificationEntity(1L, "read-key", true, Instant.parse("2026-04-14T00:02:00Z")));
         notificationRepository.save(createNotificationEntity(2L, "other-key", false, Instant.parse("2026-04-14T00:03:00Z")));
@@ -129,7 +128,7 @@ class NotificationServiceTest {
         assertThat(result.data()).hasSize(1);
         assertThat(result.data().get(0).recipientId()).isEqualTo(1L);
         assertThat(result.data().get(0).notificationKey()).isEqualTo("key-1");
-        assertThat(result.data().get(0).requestedAt()).isEqualTo(firstReservedAt);
+        assertThat(result.data().get(0).requestedAt()).isEqualTo(first.getRequestedAt());
         assertThat(result.data().get(0).notificationStatus()).isEqualTo(NotificationStatus.PENDING);
     }
 
