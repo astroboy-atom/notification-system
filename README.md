@@ -211,7 +211,7 @@ GET /v1/recipients/notifications/1?isRead=false&page=0&size=20&sort=id,asc
 docker compose -f docker/docker-compose.app.yml up --build
 ```
 
-MySQL 더미 데이터는 [docker/mysql/init.sql](/Users/haneul/Desktop/2026/notification-server/docker/mysql/init.sql)로 초기화됩니다.
+MySQL 더미 데이터는 [docker/mysql/init.sql]()로 초기화됩니다.
 
 구성:
 
@@ -229,4 +229,4 @@ MySQL 더미 데이터는 [docker/mysql/init.sql](/Users/haneul/Desktop/2026/not
     - PW : `root`
 - Publish Worker :  인스턴스는 외부 포트를 열지 않고, 앱/management 포트 모두 랜덤으로 뜹니다.
 
-###  
+###   
