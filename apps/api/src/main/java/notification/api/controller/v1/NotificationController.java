@@ -1,8 +1,11 @@
 package notification.api.controller.v1;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import notification.api.controller.v1.request.AddNotificationRequest;
 import notification.api.controller.v1.request.ScheduleNotificationRequest;
+import notification.api.controller.v1.response.AddNotificationResponse;
+import notification.api.controller.v1.response.NotificationResponse;
 import notification.api.domain.Notification;
 import notification.api.domain.NotificationService;
 import notification.api.support.Page;
@@ -23,34 +26,38 @@ class NotificationController {
     private final NotificationService notificationService;
 
     @PostMapping("/v1/notifications")
-    public ResponseEntity<Long> addNotification(@RequestBody AddNotificationRequest request) {
+    public ResponseEntity<AddNotificationResponse> addNotification(@RequestBody AddNotificationRequest request) {
         Long notificationId = notificationService.addNotification(request.toNotification());
+        AddNotificationResponse response = new AddNotificationResponse(notificationId);
 
-        return ResponseEntity.ok(notificationId);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/v1/notifications/scheduled")
-    public ResponseEntity<Long> addScheduledNotification(@RequestBody ScheduleNotificationRequest request) {
+    public ResponseEntity<AddNotificationResponse> addScheduledNotification(@RequestBody ScheduleNotificationRequest request) {
         Long notificationId = notificationService.addNotification(request.toNotification());
+        AddNotificationResponse response = new AddNotificationResponse(notificationId);
 
-        return ResponseEntity.ok(notificationId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/v1/notifications/{id}")
-    public ResponseEntity<Notification> getNotification(@PathVariable Long id) {
+    public ResponseEntity<NotificationResponse> getNotification(@PathVariable Long id) {
         Notification notification = notificationService.getNotification(id);
+        NotificationResponse response = NotificationResponse.of(notification);
 
-        return ResponseEntity.ok(notification);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/v1/notifications/{recipientId}")
-    public ResponseEntity<Page<Notification>> getRecipientNotifications(
+    public ResponseEntity<Page<NotificationResponse>> getRecipientNotifications(
             @PathVariable Long recipientId,
             @RequestParam Boolean isRead,
             @PageableDefault Pageable pageable
     ) {
-        Page<Notification> notifications = notificationService.getNotifications(recipientId, isRead, pageable);
+        Page<Notification> page = notificationService.getNotifications(recipientId, isRead, pageable);
+        List<NotificationResponse> responses = NotificationResponse.of(page.data());
 
-        return ResponseEntity.ok(notifications);
+        return ResponseEntity.ok(Page.convertData(page, responses));
     }
 }
