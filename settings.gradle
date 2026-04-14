@@ -1,12 +1,12 @@
 rootProject.name = 'notification-server'
 
 include (
-        'notification-apps:api',
-        'notification-apps:publish',
-        'notification-apps:consumer',
-        'notification-enums',
-        'notification-storage:db',
-        'notification-supplier:common',
-        'notification-supplier:direct',
-        'notification-supplier:mq',
+        'apps:api',
+        'apps:publish',
+        'apps:consumer',
+        'apps:enums',
+        'storage:db',
+        'supplier:common',
+        'supplier:direct',
+        'supplier:mq',
 )

@@ -1,0 +1,16 @@
+bootJar {
+    enabled = true
+}
+
+jar {
+    enabled = false
+}
+
+dependencies {
+    implementation project(':apps:enums')
+    implementation project(':storage:db')
+    implementation project(':supplier:common')
+    implementation project(':supplier:direct')
+    implementation 'org.springframework.boot:spring-boot-starter'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}

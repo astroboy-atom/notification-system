@@ -1,0 +1,5 @@
+dependencies {
+    implementation project(':storage:db')
+    implementation project(':supplier:common')
+    implementation project(':apps:enums')
+}
