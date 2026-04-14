@@ -1,6 +1,7 @@
 spring:
   config:
-    import: "classpath:monitoring-common.yml"
+    import:
+      - monitoring-common.yml
 
 management:
   server:

@@ -9,6 +9,7 @@ jar {
 dependencies {
     implementation project(':apps:enums')
     implementation project(':storage:db')
+    implementation project(':support:monitoring')
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
