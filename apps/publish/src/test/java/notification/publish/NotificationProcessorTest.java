@@ -4,13 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.time.Instant;
 import java.util.List;
 import notificaiton.supplier.AmbiguousCallException;
 import notificaiton.supplier.RetryableException;
+import notification.enums.NotificationChanel;
 import notification.enums.NotificationStatus;
+import notification.enums.NotificationType;
 import notification.storage.db.NotificationEntity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -84,10 +87,15 @@ class NotificationProcessorTest extends IntegrationTestSupport {
         assertThat(notification.getNotificationStatus()).isEqualTo(NotificationStatus.FAILED);
         assertThat(notification.getRetryCount()).isEqualTo(3);
         assertThat(notification.getNextAttemptAt()).isNull();
+        verify(notificationMetrics).incrementFinalFailure(
+                NotificationChanel.EMAIL,
+                NotificationType.AFTER_PAID
+        );
+        verify(notificationMetrics, never()).incrementAmbiguousFailure(any(), any());
     }
 
     @Test
-    @DisplayName("호출 결과가 불명확하면 상태를 그대로 둔다.")
+    @DisplayName("호출 결과가 불명확하면 상태를 그대로 두고 ambiguous 메트릭을 증가시킨다.")
     void process_keepsInProgressWhenCallIsAmbiguous() {
         NotificationEntity notification = createInProgressNotification(1L, "notification-key");
         Instant lastClaimedAt = notification.getLastClaimedAt();
@@ -99,10 +107,15 @@ class NotificationProcessorTest extends IntegrationTestSupport {
         assertThat(notification.getNotificationStatus()).isEqualTo(NotificationStatus.IN_PROGRESS);
         assertThat(notification.getRetryCount()).isZero();
         assertThat(notification.getLastClaimedAt()).isEqualTo(lastClaimedAt);
+        verify(notificationMetrics).incrementAmbiguousFailure(
+                NotificationChanel.EMAIL,
+                NotificationType.AFTER_PAID
+        );
+        verify(notificationMetrics, never()).incrementFinalFailure(any(), any());
     }
 
     @Test
-    @DisplayName("예상하지 못한 예외가 발생하면 FAILED로 종료하고 실패 사유를 남긴다.")
+    @DisplayName("예상하지 못한 예외가 발생하면 FAILED로 종료하고 실패 메트릭을 증가시킨다.")
     void process_marksFailedWhenUnexpectedExceptionOccurs() {
         NotificationEntity notification = createInProgressNotification(1L, "notification-key");
         given(notificationRepository.findAllById(List.of(1L))).willReturn(List.of(notification));
@@ -113,5 +126,10 @@ class NotificationProcessorTest extends IntegrationTestSupport {
         assertThat(notification.getNotificationStatus()).isEqualTo(NotificationStatus.FAILED);
         assertThat(notification.getFailedReason()).isEqualTo("send failed");
         assertThat(notification.getNextAttemptAt()).isNull();
+        verify(notificationMetrics).incrementFinalFailure(
+                NotificationChanel.EMAIL,
+                NotificationType.AFTER_PAID
+        );
+        verify(notificationMetrics, never()).incrementAmbiguousFailure(any(), any());
     }
 }

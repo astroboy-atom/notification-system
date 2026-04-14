@@ -7,6 +7,7 @@ import notificaiton.supplier.NotificationSupplier;
 import notification.enums.NotificationChanel;
 import notification.enums.NotificationStatus;
 import notification.enums.NotificationType;
+import notification.monitoring.NotificationMetrics;
 import notification.storage.db.NotificationEntity;
 import notification.storage.db.NotificationRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -31,9 +32,12 @@ abstract class IntegrationTestSupport {
     @MockitoBean
     protected NotificationSupplier notificationSupplier;
 
+    @MockitoBean
+    protected NotificationMetrics notificationMetrics;
+
     @AfterEach
     void tearDown() {
-        reset(notificationRepository, notificationSupplier);
+        reset(notificationRepository, notificationSupplier, notificationMetrics);
     }
 
     protected NotificationEntity createPendingNotification(Long id, String notificationKey) {
