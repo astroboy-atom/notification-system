@@ -48,7 +48,7 @@ class NotificationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/v1/notifications/{recipientId}")
+    @GetMapping("/v1/recipients/notifications/{recipientId}")
     public ResponseEntity<Page<NotificationResponse>> getRecipientNotifications(
             @PathVariable Long recipientId,
             @RequestParam Boolean isRead,
