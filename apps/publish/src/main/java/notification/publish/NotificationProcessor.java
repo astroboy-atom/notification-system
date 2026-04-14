@@ -77,7 +77,7 @@ public class NotificationProcessor {
     }
 
     private void handleAmbiguousCall(NotificationEntity notificationEntity, AmbiguousCallException e) {
-        log.error("알림 전송에 실패했지만, 호출이 명확하지 않습니다. id = {}", notificationEntity.getId());
+        log.error("알림 전송에 실패했지만, 호출이 명확하지 않습니다. id = {}, message = {}", notificationEntity.getId(), e.getMessage());
 
         NotificationChanel chanel = notificationEntity.getNotificationChanel();
         NotificationType type = notificationEntity.getNotificationType();
