@@ -1,5 +1,6 @@
 package notification.api.domain;
 
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import notification.api.support.BaseException;
 import notification.api.support.ErrorType;
@@ -43,11 +44,35 @@ public class NotificationService {
         }
     }
 
+    @Transactional(readOnly = true)
     public Page<Notification> getNotifications(Long recipientId, Boolean isRead, Pageable pageable) {
-        return null;
+        var pageResult = notificationRepository.findAllByRecipientIdAndIsRead(recipientId, isRead, pageable)
+                .map(this::toDomain);
+
+        return Page.of(pageResult);
     }
 
+    @Transactional(readOnly = true)
     public Notification getNotification(Long id) {
-        return null;
+        try {
+            NotificationEntity entity = notificationRepository.findByIdOrThrowException(id);
+            return toDomain(entity);
+        } catch (NoSuchElementException e) {
+            throw new BaseException(ErrorType.NOT_FOUND_NOTIFICATION);
+        }
+    }
+
+    private Notification toDomain(NotificationEntity entity) {
+        return new Notification(
+                entity.getId(),
+                entity.getRecipientId(),
+                entity.getEventId(),
+                entity.getNextAttemptAt(),
+                entity.getRequestedAt(),
+                entity.getNotificationKey(),
+                entity.getNotificationType(),
+                entity.getNotificationChanel(),
+                entity.getNotificationStatus()
+        );
     }
 }

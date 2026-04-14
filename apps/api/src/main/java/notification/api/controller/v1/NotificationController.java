@@ -1,6 +1,5 @@
 package notification.api.controller.v1;
 
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import notification.api.controller.v1.request.AddNotificationRequest;
 import notification.api.controller.v1.request.ScheduleNotificationRequest;
@@ -56,8 +55,7 @@ class NotificationController {
             @PageableDefault Pageable pageable
     ) {
         Page<Notification> page = notificationService.getNotifications(recipientId, isRead, pageable);
-        List<NotificationResponse> responses = NotificationResponse.of(page.data());
 
-        return ResponseEntity.ok(Page.convertData(page, responses));
+        return ResponseEntity.ok(page.map(NotificationResponse::of));
     }
 }

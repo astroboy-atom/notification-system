@@ -2,6 +2,9 @@ package notification.storage.db;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.NoSuchElementException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,7 +13,14 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface NotificationRepository extends JpaRepository<NotificationEntity, Long> {
 
+    default NotificationEntity findByIdOrThrowException(Long id) throws NoSuchElementException {
+        return this.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 알림입니다."));
+    }
+
     boolean existsByNotificationKey(String key);
+
+    Page<NotificationEntity> findAllByRecipientIdAndIsRead(Long recipientId, Boolean isRead, Pageable pageable);
 
     @Query(value = """
                SELECT *

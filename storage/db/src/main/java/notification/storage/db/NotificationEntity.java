@@ -61,6 +61,9 @@ public class NotificationEntity {
     @Column(nullable = true)
     private Instant lastClaimedAt;
 
+    @Column(nullable = false)
+    private Boolean isRead;
+
     public NotificationEntity(
             Long recipientId,
             Long eventId,
@@ -80,7 +83,8 @@ public class NotificationEntity {
                 null,
                 Instant.now(),
                 Instant.now(),
-                null
+                null,
+                false
         );
     }
 

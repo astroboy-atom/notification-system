@@ -57,7 +57,8 @@ abstract class IntegrationTestSupport {
                 null,
                 Instant.now(),
                 nextAttemptAt,
-                null
+                null,
+                false
         );
     }
 
@@ -78,7 +79,8 @@ abstract class IntegrationTestSupport {
                 null,
                 Instant.now(),
                 null,
-                Instant.now().minusSeconds(10)
+                Instant.now().minusSeconds(10),
+                false
         );
     }
 
@@ -95,7 +97,8 @@ abstract class IntegrationTestSupport {
                 null,
                 Instant.now(),
                 Instant.now(),
-                lastClaimedAt
+                lastClaimedAt,
+                false
         );
     }
 

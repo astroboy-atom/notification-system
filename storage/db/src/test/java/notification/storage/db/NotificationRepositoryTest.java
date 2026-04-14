@@ -1,14 +1,123 @@
 package notification.storage.db;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.NoSuchElementException;
 import notification.enums.NotificationStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 class NotificationRepositoryTest extends IntegrationTestSupport {
+
+    @Test
+    @DisplayName("ID에 해당하는 알림이 존재하면 반환한다.")
+    void findByIdOrThrowException() {
+        NotificationEntity saved = notificationRepository.save(createNotification("notification-key"));
+
+        NotificationEntity result = notificationRepository.findByIdOrThrowException(saved.getId());
+
+        assertThat(result.getId()).isEqualTo(saved.getId());
+        assertThat(result.getRecipientId()).isEqualTo(1L);
+        assertThat(result.getEventId()).isEqualTo(100L);
+        assertThat(result.getNotificationKey()).isEqualTo("notification-key");
+        assertThat(result.getNotificationStatus()).isEqualTo(NotificationStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("ID에 해당하는 알림이 없으면 예외가 발생한다.")
+    void findByIdOrThrowException_throwsException() {
+        assertThatThrownBy(() -> notificationRepository.findByIdOrThrowException(Long.MAX_VALUE))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessage("존재하지 않는 알림입니다.");
+    }
+
+    @Test
+    @DisplayName("수신자와 읽음 여부로 알림 페이지를 조회한다.")
+    void findAllByRecipientIdAndIsRead() {
+        NotificationEntity unread = notificationRepository.save(createNotificationForPage("unread-key", 1L, false));
+        notificationRepository.save(createNotificationForPage("read-key", 1L, true));
+        notificationRepository.save(createNotificationForPage("other-user-key", 2L, false));
+
+        org.springframework.data.domain.Page<NotificationEntity> result =
+                notificationRepository.findAllByRecipientIdAndIsRead(
+                        1L,
+                        false,
+                        PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "id"))
+                );
+
+        assertThat(result.getContent())
+                .extracting(NotificationEntity::getId)
+                .containsExactly(unread.getId());
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getTotalPages()).isEqualTo(1);
+        assertThat(result.isLast()).isTrue();
+    }
+
+    @Test
+    @DisplayName("수신자와 읽음 여부 조건의 알림 페이지 조회는 pageable을 따른다.")
+    void findAllByRecipientIdAndIsRead_respectsPageable() {
+        notificationRepository.save(createNotificationForPage("key-1", 1L, false));
+        notificationRepository.save(createNotificationForPage("key-2", 1L, false));
+        NotificationEntity third = notificationRepository.save(createNotificationForPage("key-3", 1L, false));
+
+        org.springframework.data.domain.Page<NotificationEntity> result =
+                notificationRepository.findAllByRecipientIdAndIsRead(
+                        1L,
+                        false,
+                        PageRequest.of(1, 2, Sort.by(Sort.Direction.ASC, "id"))
+                );
+
+        assertThat(result.getContent())
+                .extracting(NotificationEntity::getId)
+                .containsExactly(third.getId());
+        assertThat(result.getTotalElements()).isEqualTo(3);
+        assertThat(result.getTotalPages()).isEqualTo(2);
+        assertThat(result.isLast()).isTrue();
+    }
+
+    @Test
+    @DisplayName("수신자와 읽음 여부 조건의 첫 페이지 조회는 마지막 페이지가 아니다.")
+    void findAllByRecipientIdAndIsRead_firstPageMetadata() {
+        NotificationEntity first = notificationRepository.save(createNotificationForPage("key-1", 1L, false));
+        NotificationEntity second = notificationRepository.save(createNotificationForPage("key-2", 1L, false));
+        NotificationEntity third = notificationRepository.save(createNotificationForPage("key-3", 1L, false));
+
+        org.springframework.data.domain.Page<NotificationEntity> firstPage =
+                notificationRepository.findAllByRecipientIdAndIsRead(
+                        1L,
+                        false,
+                        PageRequest.of(0, 2, Sort.by(Sort.Direction.ASC, "id"))
+                );
+
+        org.springframework.data.domain.Page<NotificationEntity> secondPage =
+                notificationRepository.findAllByRecipientIdAndIsRead(
+                        1L,
+                        false,
+                        PageRequest.of(1, 2, Sort.by(Sort.Direction.ASC, "id"))
+                );
+
+        assertThat(firstPage.getContent())
+                .extracting(NotificationEntity::getId)
+                .containsExactly(first.getId(), second.getId());
+        assertThat(firstPage.getTotalElements()).isEqualTo(3);
+        assertThat(firstPage.getTotalPages()).isEqualTo(2);
+        assertThat(firstPage.isLast()).isFalse();
+        assertThat(firstPage.getContent())
+                .extracting(NotificationEntity::getId)
+                .doesNotContain(third.getId());
+
+        assertThat(secondPage.getContent())
+                .extracting(NotificationEntity::getId)
+                .containsExactly(third.getId());
+        assertThat(secondPage.getTotalElements()).isEqualTo(3);
+        assertThat(secondPage.getTotalPages()).isEqualTo(2);
+        assertThat(secondPage.isLast()).isTrue();
+    }
 
     @Test
     @DisplayName("키에 해당하는 알림이 존재하면 true를 반환한다.")
@@ -182,7 +291,8 @@ class NotificationRepositoryTest extends IntegrationTestSupport {
                 null,
                 Instant.now(),
                 Instant.now(),
-                lastClaimedAt
+                lastClaimedAt,
+                false
         );
     }
 
@@ -199,7 +309,26 @@ class NotificationRepositoryTest extends IntegrationTestSupport {
                 null,
                 Instant.now(),
                 nextAttemptAt,
-                null
+                null,
+                false
+        );
+    }
+
+    private NotificationEntity createNotificationForPage(String notificationKey, Long recipientId, boolean isRead) {
+        return new NotificationEntity(
+                null,
+                recipientId,
+                100L,
+                notification.enums.NotificationType.AFTER_PAID,
+                notification.enums.NotificationChanel.EMAIL,
+                notificationKey,
+                NotificationStatus.PENDING,
+                0,
+                null,
+                Instant.now(),
+                Instant.now(),
+                null,
+                isRead
         );
     }
 }

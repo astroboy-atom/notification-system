@@ -160,7 +160,8 @@ class NotificationRepositoryConcurrencyTest extends IntegrationTestSupport {
                 null,
                 Instant.now(),
                 Instant.now(),
-                lastClaimedAt
+                lastClaimedAt,
+                false
         );
     }
 }

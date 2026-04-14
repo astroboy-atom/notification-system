@@ -15,6 +15,7 @@ import notification.storage.db.NotificationRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+// TODO : update 배치 단위 및 로깅 모듈 설정
 @Slf4j
 @Component
 @RequiredArgsConstructor

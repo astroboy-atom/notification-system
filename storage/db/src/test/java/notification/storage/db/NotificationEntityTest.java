@@ -32,6 +32,7 @@ class NotificationEntityTest {
         assertThat(notificationEntity.getRequestedAt()).isBetween(before, after);
         assertThat(notificationEntity.getNextAttemptAt()).isBetween(before, after);
         assertThat(notificationEntity.getLastClaimedAt()).isNull();
+        assertThat(notificationEntity.getIsRead()).isFalse();
     }
 
     @Test
