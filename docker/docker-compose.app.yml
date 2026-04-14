@@ -1,0 +1,70 @@
+services:
+  mysql:
+    image: mysql:8.0.40
+    container_name: notification-mysql
+    environment:
+      MYSQL_DATABASE: notification
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  api:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        APP_TASK: :apps:api:bootJar
+        APP_JAR_GLOB: apps/api/build/libs/*.jar
+    container_name: notification-api
+    depends_on:
+      - mysql
+    environment:
+      MYSQL_URL: jdbc:mysql://mysql:3306/notification?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      MYSQL_USERNAME: root
+      MYSQL_PASSWORD: root
+      API_SERVER_PORT: 8080
+      API_MANAGEMENT_SERVER_PORT: 8081
+    ports:
+      - "8080:8080"
+
+  publish-1:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        APP_TASK: :apps:publish:bootJar
+        APP_JAR_GLOB: apps/publish/build/libs/*.jar
+    container_name: notification-publish-1
+    depends_on:
+      - mysql
+      - api
+    environment:
+      MYSQL_URL: jdbc:mysql://mysql:3306/notification?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      MYSQL_USERNAME: root
+      MYSQL_PASSWORD: root
+      PUBLISH_SERVER_PORT: 0
+      PUBLISH_MANAGEMENT_SERVER_PORT: 0
+
+  publish-2:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        APP_TASK: :apps:publish:bootJar
+        APP_JAR_GLOB: apps/publish/build/libs/*.jar
+    container_name: notification-publish-2
+    depends_on:
+      - mysql
+      - api
+    environment:
+      MYSQL_URL: jdbc:mysql://mysql:3306/notification?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      MYSQL_USERNAME: root
+      MYSQL_PASSWORD: root
+      PUBLISH_SERVER_PORT: 0
+      PUBLISH_MANAGEMENT_SERVER_PORT: 0
