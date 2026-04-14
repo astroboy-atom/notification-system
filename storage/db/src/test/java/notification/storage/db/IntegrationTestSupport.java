@@ -1,5 +1,6 @@
 package notification.storage.db;
 
+import java.time.Instant;
 import notification.enums.NotificationChanel;
 import notification.enums.NotificationType;
 import org.junit.jupiter.api.AfterEach;
@@ -56,7 +57,8 @@ abstract class IntegrationTestSupport {
                 100L,
                 NotificationType.AFTER_PAID,
                 NotificationChanel.EMAIL,
-                notificationKey
+                notificationKey,
+                Instant.now()
         );
     }
 

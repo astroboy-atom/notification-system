@@ -26,22 +26,27 @@ public class NotificationService {
         return saveEntity(notification, notificationKey).getId();
     }
 
-    private NotificationEntity saveEntity(NewNotification notification, String notificationKey) {
-        NotificationEntity entity = new NotificationEntity(
-                notification.recipientId(),
-                notification.eventId(),
-                notification.notificationType(),
-                notification.notificationChanel(),
-                notificationKey
-        );
-
-        return notificationRepository.save(entity);
-    }
-
     private void validateAlreadyAdded(String key) {
         if (notificationRepository.existsByNotificationKey(key)) {
             throw new BaseException(ErrorType.DUPLICATED_NOTIFICATION);
         }
+    }
+
+    private NotificationEntity saveEntity(NewNotification notification, String notificationKey) {
+        NotificationEntity entity = toEntity(notification, notificationKey);
+
+        return notificationRepository.save(entity);
+    }
+
+    private NotificationEntity toEntity(NewNotification notification, String notificationKey) {
+        return new NotificationEntity(
+                notification.recipientId(),
+                notification.eventId(),
+                notification.notificationType(),
+                notification.notificationChanel(),
+                notificationKey,
+                notification.reservedAt()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -67,7 +72,6 @@ public class NotificationService {
                 entity.getId(),
                 entity.getRecipientId(),
                 entity.getEventId(),
-                entity.getNextAttemptAt(),
                 entity.getRequestedAt(),
                 entity.getNotificationKey(),
                 entity.getNotificationType(),

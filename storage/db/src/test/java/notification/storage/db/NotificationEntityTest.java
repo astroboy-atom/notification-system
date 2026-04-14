@@ -41,12 +41,15 @@ class NotificationEntityTest {
         NotificationEntity notificationEntity = createNotification("notification-key");
         notificationEntity.markInProgress();
         Instant lastClaimedAt = notificationEntity.getLastClaimedAt();
+        Instant before = Instant.now();
 
         notificationEntity.done();
 
+        Instant after = Instant.now();
+
         assertThat(notificationEntity.getNotificationStatus()).isEqualTo(NotificationStatus.DONE);
         assertThat(notificationEntity.getFailedReason()).isNull();
-        assertThat(notificationEntity.getNextAttemptAt()).isNull();
+        assertThat(notificationEntity.getNextAttemptAt()).isBetween(before, after);
         assertThat(notificationEntity.getLastClaimedAt()).isEqualTo(lastClaimedAt);
     }
 
@@ -116,12 +119,15 @@ class NotificationEntityTest {
         NotificationEntity notificationEntity = createNotification("notification-key");
         notificationEntity.markInProgress();
         Instant lastClaimedAt = notificationEntity.getLastClaimedAt();
+        Instant before = Instant.now();
 
         notificationEntity.markFailed("failed reason");
 
+        Instant after = Instant.now();
+
         assertThat(notificationEntity.getNotificationStatus()).isEqualTo(NotificationStatus.FAILED);
         assertThat(notificationEntity.getFailedReason()).isEqualTo("failed reason");
-        assertThat(notificationEntity.getNextAttemptAt()).isNull();
+        assertThat(notificationEntity.getNextAttemptAt()).isBetween(before, after);
         assertThat(notificationEntity.getLastClaimedAt()).isEqualTo(lastClaimedAt);
     }
 
@@ -158,7 +164,7 @@ class NotificationEntityTest {
                 100L,
                 NotificationType.AFTER_PAID,
                 NotificationChanel.EMAIL,
-                notificationKey
+                notificationKey, Instant.now()
         );
     }
 }

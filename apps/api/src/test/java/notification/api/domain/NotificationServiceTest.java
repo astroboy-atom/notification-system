@@ -92,7 +92,7 @@ class NotificationServiceTest {
         assertThat(notification.id()).isEqualTo(saved.getId());
         assertThat(notification.recipientId()).isEqualTo(1L);
         assertThat(notification.eventId()).isEqualTo(100L);
-        assertThat(notification.reservedAt()).isEqualTo(reservedAt);
+        assertThat(notification.requestedAt()).isEqualTo(reservedAt);
         assertThat(notification.requestAt()).isEqualTo(saved.getRequestedAt());
         assertThat(notification.notificationKey()).isEqualTo("detail-key");
         assertThat(notification.notificationType()).isEqualTo(NotificationType.AFTER_PAID);
@@ -129,7 +129,7 @@ class NotificationServiceTest {
         assertThat(result.data()).hasSize(1);
         assertThat(result.data().get(0).recipientId()).isEqualTo(1L);
         assertThat(result.data().get(0).notificationKey()).isEqualTo("key-1");
-        assertThat(result.data().get(0).reservedAt()).isEqualTo(firstReservedAt);
+        assertThat(result.data().get(0).requestedAt()).isEqualTo(firstReservedAt);
         assertThat(result.data().get(0).notificationStatus()).isEqualTo(NotificationStatus.PENDING);
     }
 

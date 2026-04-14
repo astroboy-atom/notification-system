@@ -78,7 +78,7 @@ abstract class IntegrationTestSupport {
                 retryCount,
                 null,
                 Instant.now(),
-                null,
+                Instant.now(),
                 Instant.now().minusSeconds(10),
                 false
         );

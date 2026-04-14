@@ -191,9 +191,10 @@ class NotificationRepositoryTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("nextAttemptAt이 null인 알림도 조회한다.")
-    void findAllByNotificationStatusForUpdateSkipLocked_includesNullNextAttemptAt() {
-        NotificationEntity pending = notificationRepository.save(createPendingNotification("pending-key", null));
+    @DisplayName("nextAttemptAt이 지난 알림은 조회한다.")
+    void findAllByNotificationStatusForUpdateSkipLocked_includesDueNextAttemptAt() {
+        Instant now = Instant.now();
+        NotificationEntity pending = notificationRepository.save(createPendingNotification("pending-key", now.minusSeconds(1)));
 
         List<NotificationEntity> notifications = notificationRepository.findAllByNotificationStatusForUpdateSkipLocked(
                 NotificationStatus.PENDING.name(),
@@ -220,6 +221,21 @@ class NotificationRepositoryTest extends IntegrationTestSupport {
         assertThat(notifications)
                 .extracting(NotificationEntity::getId)
                 .containsExactly(past.getId());
+    }
+
+    @Test
+    @DisplayName("nextAttemptAt이 아직 도래하지 않은 알림만 있으면 조회하지 않는다.")
+    void findAllByNotificationStatusForUpdateSkipLocked_returnsEmptyWhenAllNextAttemptAtAreFuture() {
+        Instant now = Instant.now();
+        notificationRepository.save(createPendingNotification("future-key-1", now.plusSeconds(10)));
+        notificationRepository.save(createPendingNotification("future-key-2", now.plusSeconds(20)));
+
+        List<NotificationEntity> notifications = notificationRepository.findAllByNotificationStatusForUpdateSkipLocked(
+                NotificationStatus.PENDING.name(),
+                10
+        );
+
+        assertThat(notifications).isEmpty();
     }
 
     @Test

@@ -55,7 +55,7 @@ public class NotificationEntity {
     @Column(nullable = false)
     private Instant requestedAt;
 
-    @Column(nullable = true)
+    @Column(nullable = false)
     private Instant nextAttemptAt;
 
     @Column(nullable = true)
@@ -69,7 +69,8 @@ public class NotificationEntity {
             Long eventId,
             NotificationType notificationType,
             NotificationChanel notificationChanel,
-            String notificationKey
+            String notificationKey,
+            Instant nextAttemptAt
     ) {
         this(
                 null,
@@ -82,7 +83,7 @@ public class NotificationEntity {
                 0,
                 null,
                 Instant.now(),
-                Instant.now(),
+                nextAttemptAt,
                 null,
                 false
         );
@@ -91,7 +92,7 @@ public class NotificationEntity {
     public void done() {
         this.notificationStatus = NotificationStatus.DONE;
         this.failedReason = null;
-        this.nextAttemptAt = null;
+        this.nextAttemptAt = Instant.now();
     }
 
     public boolean canRetry() {
@@ -117,7 +118,7 @@ public class NotificationEntity {
     public void markFailed(String failedReason) {
         this.failedReason = failedReason;
         this.notificationStatus = NotificationStatus.FAILED;
-        this.nextAttemptAt = null;
+        this.nextAttemptAt = Instant.now();
     }
 
     public void markInProgress() {

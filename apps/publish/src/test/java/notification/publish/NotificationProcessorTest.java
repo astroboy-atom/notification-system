@@ -55,7 +55,7 @@ class NotificationProcessorTest extends IntegrationTestSupport {
 
         assertThat(notification.getNotificationStatus()).isEqualTo(NotificationStatus.DONE);
         assertThat(notification.getFailedReason()).isNull();
-        assertThat(notification.getNextAttemptAt()).isNull();
+        assertThat(notification.getNextAttemptAt()).isNotNull();
     }
 
     @Test
@@ -86,7 +86,7 @@ class NotificationProcessorTest extends IntegrationTestSupport {
 
         assertThat(notification.getNotificationStatus()).isEqualTo(NotificationStatus.FAILED);
         assertThat(notification.getRetryCount()).isEqualTo(3);
-        assertThat(notification.getNextAttemptAt()).isNull();
+        assertThat(notification.getNextAttemptAt()).isNotNull();
         verify(notificationMetrics).incrementFinalFailure(
                 NotificationChanel.EMAIL,
                 NotificationType.AFTER_PAID
@@ -125,7 +125,7 @@ class NotificationProcessorTest extends IntegrationTestSupport {
 
         assertThat(notification.getNotificationStatus()).isEqualTo(NotificationStatus.FAILED);
         assertThat(notification.getFailedReason()).isEqualTo("send failed");
-        assertThat(notification.getNextAttemptAt()).isNull();
+        assertThat(notification.getNextAttemptAt()).isNotNull();
         verify(notificationMetrics).incrementFinalFailure(
                 NotificationChanel.EMAIL,
                 NotificationType.AFTER_PAID

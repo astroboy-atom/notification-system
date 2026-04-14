@@ -11,7 +11,7 @@ public record NotificationResponse(
         Long id,
         Long recipientId,
         Long eventId,
-        Instant reservedAt,
+        Instant requestedAt,
         NotificationType notificationType,
         NotificationChanel notificationChanel,
         NotificationStatus notificationStatus
@@ -28,7 +28,7 @@ public record NotificationResponse(
                 notification.id(),
                 notification.recipientId(),
                 notification.eventId(),
-                notification.reservedAt(),
+                notification.requestedAt(),
                 notification.notificationType(),
                 notification.notificationChanel(),
                 notification.notificationStatus()
