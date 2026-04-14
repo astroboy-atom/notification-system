@@ -1,0 +1,7 @@
+spring:
+  config:
+    import: "classpath:monitoring-common.yml"
+
+management:
+  server:
+    port: 8081

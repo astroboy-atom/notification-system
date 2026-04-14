@@ -1,6 +1,6 @@
 rootProject.name = 'notification-server'
 
-include (
+include(
         'apps:api',
         'apps:publish',
         'apps:consumer',
@@ -9,4 +9,5 @@ include (
         'supplier:common',
         'supplier:direct',
         'supplier:mq',
+        'support:monitoring'
 )
