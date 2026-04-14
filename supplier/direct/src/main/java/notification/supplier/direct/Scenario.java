@@ -48,6 +48,7 @@ class Scenario {
             throw new AmbiguousCallException();
         }
 
+        // 호출하면 무한 다운된다. recovery가 잘됐다는 뜻이니 의도된 동작을 검증하긴 한다.
         if (recipientId == POST_SEND_CRASH_RECIPIENT_ID) {
             SpringApplication.exit(context, () -> 1);
             System.exit(1);
@@ -58,7 +59,5 @@ class Scenario {
         if (notificationEntity.getRetryCount() < 2) {
             throw new RetryableException();
         }
-
-        throw new IllegalStateException("none retryable exception");
     }
 }
