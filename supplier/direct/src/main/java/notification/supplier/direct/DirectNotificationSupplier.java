@@ -10,7 +10,6 @@ import notification.storage.db.MemberRepository;
 import notification.storage.db.NotificationEntity;
 import org.springframework.stereotype.Component;
 
-
 @Component
 @RequiredArgsConstructor
 class DirectNotificationSupplier implements NotificationSupplier {
@@ -18,12 +17,15 @@ class DirectNotificationSupplier implements NotificationSupplier {
     private final MemberRepository memberRepository;
     private final EventRepository eventRepository;
     private final List<NotificationChanelSender> senders;
+    private final Scenario scenario;
 
     @Override
     public void doSend(NotificationEntity notificationEntity) {
         MemberEntity memberEntity = memberRepository.findByIdOrThrowException(notificationEntity.getRecipientId());
         EventEntity eventEntity = eventRepository.findByIdOrThrowException(notificationEntity.getEventId());
         NotificationChanelSender sender = findSendersOrThrow(notificationEntity);
+
+        scenario.execute(notificationEntity);
 
         sender.send(notificationEntity, memberEntity, eventEntity);
     }
