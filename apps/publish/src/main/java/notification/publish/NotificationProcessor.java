@@ -7,6 +7,7 @@ import notificaiton.supplier.AmbiguousCallException;
 import notificaiton.supplier.NotificationSupplier;
 import notificaiton.supplier.RetryableException;
 import notification.enums.NotificationStatus;
+import notification.monitoring.NotificationMetrics;
 import notification.storage.db.NotificationEntity;
 import notification.storage.db.NotificationRepository;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ public class NotificationProcessor {
 
     private final NotificationRepository notificationRepository;
     private final NotificationSupplier notificationSupplier;
+    private final NotificationMetrics notificationMetrics;
 
     /**
      * 현재 스레드에서 claim한 notification ids 반환
@@ -75,5 +77,6 @@ public class NotificationProcessor {
         log.error("알림 전송에 최종 실패했습니다. id = {}, retryCount = {}", notificationEntity.getId(), notificationEntity.getRetryCount());
 
         notificationEntity.markFailed(e.getMessage());
+        notificationMetrics.incrementFinalFailure(notificationEntity.getNotificationChanel(), notificationEntity.getNotificationType());
     }
 }
