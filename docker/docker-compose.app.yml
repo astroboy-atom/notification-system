@@ -1,5 +1,6 @@
 services:
   mysql:
+    restart: unless-stopped
     image: mysql:8.0.40
     container_name: notification-mysql
     environment:
