@@ -1,6 +1,7 @@
 package notification.publish;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -8,31 +9,13 @@ import static org.mockito.Mockito.verify;
 import java.time.Instant;
 import java.util.List;
 import notificaiton.supplier.AmbiguousCallException;
-import notificaiton.supplier.NotificationSupplier;
 import notificaiton.supplier.RetryableException;
-import notification.enums.NotificationChanel;
 import notification.enums.NotificationStatus;
-import notification.enums.NotificationType;
 import notification.storage.db.NotificationEntity;
-import notification.storage.db.NotificationRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
-class NotificationProcessorTest {
-
-    @Mock
-    private NotificationRepository notificationRepository;
-
-    @Mock
-    private NotificationSupplier notificationSupplier;
-
-    @InjectMocks
-    private NotificationProcessor notificationProcessor;
+class NotificationProcessorTest extends IntegrationTestSupport {
 
     @Test
     @DisplayName("PENDING 알림을 claim해서 IN_PROGRESS로 바꾸고 ids를 반환한다.")
@@ -78,7 +61,7 @@ class NotificationProcessorTest {
         NotificationEntity notification = createInProgressNotification(1L, "notification-key");
         Instant before = Instant.now();
         given(notificationRepository.findAllById(List.of(1L))).willReturn(List.of(notification));
-        doThrow(new RetryableException()).when(notificationSupplier).doSend(notification);
+        doThrow(new RetryableException()).when(notificationSupplier).doSend(any(NotificationEntity.class));
 
         notificationProcessor.process(List.of(1L));
 
@@ -94,7 +77,7 @@ class NotificationProcessorTest {
     void process_marksFailedWhenRetryableExceptionOccursAfterMaxRetries() {
         NotificationEntity notification = createInProgressNotification(1L, "notification-key", 3);
         given(notificationRepository.findAllById(List.of(1L))).willReturn(List.of(notification));
-        doThrow(new RetryableException()).when(notificationSupplier).doSend(notification);
+        doThrow(new RetryableException()).when(notificationSupplier).doSend(any(NotificationEntity.class));
 
         notificationProcessor.process(List.of(1L));
 
@@ -109,7 +92,7 @@ class NotificationProcessorTest {
         NotificationEntity notification = createInProgressNotification(1L, "notification-key");
         Instant lastClaimedAt = notification.getLastClaimedAt();
         given(notificationRepository.findAllById(List.of(1L))).willReturn(List.of(notification));
-        doThrow(new AmbiguousCallException()).when(notificationSupplier).doSend(notification);
+        doThrow(new AmbiguousCallException()).when(notificationSupplier).doSend(any(NotificationEntity.class));
 
         notificationProcessor.process(List.of(1L));
 
@@ -123,50 +106,12 @@ class NotificationProcessorTest {
     void process_marksFailedWhenUnexpectedExceptionOccurs() {
         NotificationEntity notification = createInProgressNotification(1L, "notification-key");
         given(notificationRepository.findAllById(List.of(1L))).willReturn(List.of(notification));
-        doThrow(new IllegalStateException("send failed")).when(notificationSupplier).doSend(notification);
+        doThrow(new IllegalStateException("send failed")).when(notificationSupplier).doSend(any(NotificationEntity.class));
 
         notificationProcessor.process(List.of(1L));
 
         assertThat(notification.getNotificationStatus()).isEqualTo(NotificationStatus.FAILED);
         assertThat(notification.getFailedReason()).isEqualTo("send failed");
         assertThat(notification.getNextAttemptAt()).isNull();
-    }
-
-    private NotificationEntity createPendingNotification(Long id, String notificationKey) {
-        return new NotificationEntity(
-                id,
-                1L,
-                100L,
-                NotificationType.AFTER_PAID,
-                NotificationChanel.EMAIL,
-                notificationKey,
-                NotificationStatus.PENDING,
-                0,
-                null,
-                Instant.now(),
-                Instant.now(),
-                null
-        );
-    }
-
-    private NotificationEntity createInProgressNotification(Long id, String notificationKey) {
-        return createInProgressNotification(id, notificationKey, 0);
-    }
-
-    private NotificationEntity createInProgressNotification(Long id, String notificationKey, int retryCount) {
-        return new NotificationEntity(
-                id,
-                1L,
-                100L,
-                NotificationType.AFTER_PAID,
-                NotificationChanel.EMAIL,
-                notificationKey,
-                NotificationStatus.IN_PROGRESS,
-                retryCount,
-                null,
-                Instant.now(),
-                null,
-                Instant.now().minusSeconds(10)
-        );
     }
 }
