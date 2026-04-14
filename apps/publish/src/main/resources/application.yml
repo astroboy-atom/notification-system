@@ -3,3 +3,6 @@ spring:
     import:
       - monitoring-publish.yml
       - storage-db.yml
+
+server:
+  port: ${PUBLISH_SERVER_PORT:0}

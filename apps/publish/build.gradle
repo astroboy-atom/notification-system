@@ -12,6 +12,6 @@ dependencies {
     implementation project(':supplier:common')
     implementation project(':supplier:direct')
     implementation project(':support:monitoring')
-    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

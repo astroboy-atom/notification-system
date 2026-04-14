@@ -5,4 +5,4 @@ spring:
 
 management:
   server:
-    port: 8082
+    port: ${PUBLISH_MANAGEMENT_SERVER_PORT:0}
